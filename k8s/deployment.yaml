@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: platform-delivery-demo
+  labels:
+    app: platform-delivery-demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: platform-delivery-demo
+  template:
+    metadata:
+      labels:
+        app: platform-delivery-demo
+    spec:
+      containers:
+        - name: platform-delivery-demo
+          image: harbor.company.com/demo/platform-delivery-demo:latest
+          ports:
+            - containerPort: 5000
+          env:
+            - name: DEMO_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: demo-secret
+                  key: demo-token
