@@ -1,36 +1,79 @@
-# Platform Delivery Demo
+# Platform Delivery — Siemens Stack Learning Project
 
-A small demo project to understand how GitHub, GitHub Actions, SonarQube, Docker, Harbor/Artifactory, ArgoCD, Kubernetes, Rancher, and Vault fit together in a modern software delivery lifecycle.
+Built this project to understand the platform engineering ecosystem before joining Siemens.
+It maps the full software delivery lifecycle and shows where each tool fits.
 
-## What the app does
+## The pipeline
 
-This is a simple Flask service with three endpoints:
+```
+Developer
+    ↓
+GitHub Enterprise       ← source control, pull requests, code review
+    ↓
+GitHub Actions          ← CI/CD: runs tests, scans, builds automatically on every push
+    ↓
+SonarQube               ← code quality gate: bugs, security issues, coverage
+    ↓
+Docker Build            ← packages the app and its dependencies into a container
+    ↓
+Harbor / Artifactory    ← stores the built container image and other artifacts
+    ↓
+ArgoCD (GitOps)         ← watches Git, syncs changes to Kubernetes automatically
+    ↓
+Kubernetes              ← runs and scales the containers (pods, deployments, services)
+    ↓
+Rancher                 ← management dashboard for Kubernetes clusters
+    ↓
+Application running     ← live, scaled, self-healing
 
-- `GET /` — shows the overall delivery flow
-- `GET /health` — health check endpoint
-- `GET /tools` — explains each platform tool
-- `POST /analyze` — simulates a platform readiness analysis for a repository
+Vault ──────────────────→ injects secrets securely into Kubernetes at runtime
+```
+
+## What this repo contains
+
+- `main.py` — Flask app with endpoints simulating a platform readiness analysis
+- `test_app.py` — unit tests
+- `.github/workflows/ci.yaml` — GitHub Actions CI pipeline (checkout → test → SonarQube placeholder → Docker build)
+- `Dockerfile` — containerizes the Flask app
+- `k8s/` — Kubernetes Deployment and Service manifests
+- `argocd/application.yaml` — ArgoCD application config showing GitOps sync
+- `sonar-project.properties` — SonarQube project config
+
+## The AI agent idea
+
+The `/analyze` endpoint simulates what an AI agent could do across this pipeline:
+
+- Read a GitHub repository and check for required files (Dockerfile, CI workflow, k8s manifests)
+- Check SonarQube quality results before allowing deployment
+- Verify artifacts exist in Harbor or Artifactory
+- Confirm ArgoCD sync status with Kubernetes
+- Report overall deployment readiness in one place
+
+A real agent would connect these tools together and surface problems automatically,
+reducing manual coordination across the delivery lifecycle.
+
+## What each tool does
+
+| Tool | Purpose |
+|------|---------|
+| GitHub Enterprise | Stores code, manages branches and pull requests |
+| GitHub Actions | Runs tests and builds automatically on every push |
+| SonarQube | Checks code quality, security, and test coverage |
+| Docker | Packages the app into a portable container |
+| Harbor / Artifactory | Stores built images and artifacts |
+| ArgoCD | Deploys automatically when Git changes (GitOps) |
+| Kubernetes | Runs, scales, and self-heals containers |
+| Rancher | UI dashboard for managing Kubernetes clusters |
+| Vault | Stores secrets — passwords, tokens, API keys |
 
 ## Run locally
 
 ```bash
 pip install -r requirements.txt
-python -m app.main
+python main.py
 ```
 
-Open:
-
-```bash
-http://localhost:5000
-http://localhost:5000/health
-http://localhost:5000/tools
-```
-
-## Run tests
-
-```bash
-pytest
-```
+Endpoints: `GET /` · `GET /health` · `GET /tools` · `POST /analyze`
 
 ## Run with Docker
 
@@ -39,34 +82,6 @@ docker build -t platform-delivery-demo .
 docker run -p 5000:5000 platform-delivery-demo
 ```
 
-## CI/CD workflow
+## Note
 
-The GitHub Actions workflow in `.github/workflows/ci.yml` performs:
-
-1. Code checkout
-2. Python setup
-3. Dependency installation
-4. Unit tests
-5. Placeholder SonarQube scan
-6. Docker image build
-7. Placeholder push to Harbor/Artifactory
-
-## Kubernetes and GitOps
-
-The `k8s/` folder contains sample Kubernetes `Deployment` and `Service` manifests.
-
-The `argocd/application.yaml` file shows how ArgoCD could sync the `k8s/` folder into a Kubernetes cluster.
-
-## Vault note
-
-The Kubernetes deployment references a secret value. In a real enterprise setup, this should come from Vault or an approved secrets-management integration, not from source code.
-
-## Main learning outcome
-
-This project is not meant to be production-ready. It is a learning demo showing how the tools connect:
-
-```text
-GitHub → GitHub Actions → SonarQube → Docker → Harbor/Artifactory → ArgoCD → Kubernetes → Rancher
-                                            ↑
-                                          Vault
-```
+The goal was to understand how these tools connect before Day 1, not to replace a senior platform engineer.
